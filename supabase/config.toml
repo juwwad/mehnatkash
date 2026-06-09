@@ -1,0 +1,24 @@
+project_id = "hqlzhbvmopugzrxnxylx"
+
+[auth]
+enable_signup = true
+external_url = "http://localhost:5173"
+
+# Email OTP settings
+[auth.email]
+enable_signup = true
+otp_expiry = 600
+otp_length = 6
+
+[functions.send-push-notification]
+verify_jwt = false
+
+[functions.get-vapid-key]
+verify_jwt = false
+
+[functions.send-otp]
+verify_jwt = false
+
+[functions.verify-otp]
+verify_jwt = false
+

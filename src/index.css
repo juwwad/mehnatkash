@@ -1,0 +1,304 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* MehnatKash Design System - Accessible for illiterate users */
+/* All colors in HSL */
+
+@layer base {
+  :root {
+    /* Brand Colors - Warm & Trustworthy */
+    --background: 30 20% 98%;
+    --foreground: 25 30% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 25 30% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 25 30% 12%;
+
+    /* Primary - Warm Orange (Trust, Labor, Energy) */
+    --primary: 25 95% 53%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 30 100% 60%;
+
+    /* Secondary - Deep Teal (Professionalism) */
+    --secondary: 175 60% 35%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Muted - Warm Gray */
+    --muted: 30 15% 92%;
+    --muted-foreground: 25 15% 45%;
+
+    /* Accent - Golden Yellow (Success, Earnings) */
+    --accent: 45 100% 50%;
+    --accent-foreground: 25 30% 12%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Status Colors */
+    --success: 145 65% 42%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 25 30% 12%;
+    --info: 200 80% 50%;
+    --info-foreground: 0 0% 100%;
+
+    /* UI */
+    --border: 30 20% 88%;
+    --input: 30 20% 88%;
+    --ring: 25 95% 53%;
+
+    --radius: 1rem;
+
+    /* Shadows */
+    --shadow-soft: 0 4px 20px -2px hsl(25 30% 12% / 0.08);
+    --shadow-card: 0 8px 30px -4px hsl(25 30% 12% / 0.12);
+    --shadow-elevated: 0 20px 50px -10px hsl(25 30% 12% / 0.2);
+    --shadow-glow: 0 0 40px hsl(25 95% 53% / 0.3);
+
+    /* Sidebar */
+    --sidebar-background: 30 20% 96%;
+    --sidebar-foreground: 25 30% 12%;
+    --sidebar-primary: 25 95% 53%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 30 15% 92%;
+    --sidebar-accent-foreground: 25 30% 12%;
+    --sidebar-border: 30 20% 88%;
+    --sidebar-ring: 25 95% 53%;
+  }
+
+  .dark {
+    --background: 25 25% 8%;
+    --foreground: 30 15% 95%;
+
+    --card: 25 20% 12%;
+    --card-foreground: 30 15% 95%;
+
+    --popover: 25 20% 12%;
+    --popover-foreground: 30 15% 95%;
+
+    --primary: 25 95% 55%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 30 100% 60%;
+
+    --secondary: 175 50% 40%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 25 15% 18%;
+    --muted-foreground: 30 15% 60%;
+
+    --accent: 45 100% 50%;
+    --accent-foreground: 25 30% 12%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 145 60% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 90% 55%;
+    --warning-foreground: 25 30% 12%;
+    --info: 200 75% 55%;
+    --info-foreground: 0 0% 100%;
+
+    --border: 25 15% 20%;
+    --input: 25 15% 20%;
+    --ring: 25 95% 55%;
+
+    --sidebar-background: 25 20% 10%;
+    --sidebar-foreground: 30 15% 95%;
+    --sidebar-primary: 25 95% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 25 15% 16%;
+    --sidebar-accent-foreground: 30 15% 95%;
+    --sidebar-border: 25 15% 20%;
+    --sidebar-ring: 25 95% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    font-family: 'Poppins', system-ui, sans-serif;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+@layer components {
+  /* Large Touch Target - Essential for accessibility */
+  .touch-target {
+    @apply min-h-[56px] min-w-[56px] flex items-center justify-center;
+  }
+
+  /* Service Icon Card */
+  .service-icon-card {
+    @apply relative flex flex-col items-center justify-center p-6 rounded-2xl bg-card border-2 border-transparent transition-all duration-300 ease-out;
+    box-shadow: var(--shadow-card);
+  }
+
+  .service-icon-card:hover,
+  .service-icon-card:active {
+    @apply border-primary scale-105;
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* Professional Card */
+  .pro-card {
+    @apply relative bg-card rounded-2xl sm:rounded-3xl overflow-hidden;
+    box-shadow: var(--shadow-card);
+  }
+
+  .pro-card-premium {
+    @apply border-2 border-primary;
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* Status Badges */
+  .status-requested {
+    @apply bg-info text-info-foreground;
+  }
+  
+  .status-accepted {
+    @apply bg-success text-success-foreground;
+  }
+  
+  .status-rejected {
+    @apply bg-destructive text-destructive-foreground;
+  }
+  
+  .status-in-progress {
+    @apply bg-warning text-warning-foreground;
+  }
+  
+  .status-completed {
+    @apply bg-secondary text-secondary-foreground;
+  }
+
+  /* Bottom Navigation */
+  .bottom-nav {
+    @apply fixed bottom-0 left-0 right-0 bg-card border-t border-border flex items-center justify-around px-2 py-3 z-50;
+    box-shadow: 0 -4px 20px hsl(25 30% 12% / 0.08);
+    padding-bottom: max(env(safe-area-inset-bottom), 12px);
+  }
+
+  .nav-item {
+    @apply flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-200;
+  }
+
+  .nav-item.active {
+    @apply text-primary bg-primary/10;
+  }
+
+  /* Swipe Card */
+  .swipe-card {
+    @apply absolute inset-0 bg-card rounded-3xl overflow-hidden;
+    box-shadow: var(--shadow-elevated);
+  }
+
+  /* Hero Section */
+  .hero-gradient {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary)) 0%,
+      hsl(var(--primary-glow)) 50%,
+      hsl(var(--accent)) 100%
+    );
+  }
+
+  /* Rating Stars */
+  .star-filled {
+    @apply text-accent;
+  }
+
+  .star-empty {
+    @apply text-muted-foreground/30;
+  }
+
+  /* Price Tag */
+  .price-tag {
+    @apply inline-flex items-center gap-1 px-3 py-1.5 bg-accent/20 text-accent-foreground rounded-full font-bold;
+  }
+
+  /* Glassmorphism */
+  .glass {
+    @apply bg-card/80 backdrop-blur-lg;
+  }
+}
+
+@layer utilities {
+  /* Safe area for mobile */
+  .safe-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), 80px);
+  }
+
+  .safe-top {
+    padding-top: max(env(safe-area-inset-top), 20px);
+  }
+
+  /* Gradients */
+  .gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-glow)) 100%);
+  }
+
+  .gradient-secondary {
+    background: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(175 65% 45%) 100%);
+  }
+
+  .gradient-success {
+    background: linear-gradient(135deg, hsl(var(--success)) 0%, hsl(145 70% 50%) 100%);
+  }
+
+  /* Text gradient */
+  .text-gradient {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Animation utilities */
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-bounce-gentle {
+    animation: bounce-gentle 2s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes bounce-gentle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+
+  /* Haptic feedback simulation */
+  .haptic {
+    @apply active:scale-95 transition-transform duration-100;
+  }
+
+  /* Hide scrollbar */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

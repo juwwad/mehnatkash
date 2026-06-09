@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ALTER COLUMN phone DROP NOT NULL, ALTER COLUMN phone SET DEFAULT '';
