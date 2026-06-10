@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Save, AlertCircle, CheckCircle, Info, Eye, EyeOff, Lock } from "@/components/icons/FontAwesomeIcons";
+import { Save, Info, CheckCircle, Eye, EyeOff, Lock, Zap, DollarSign, Settings, MessageSquare } from "@/components/icons/FontAwesomeIcons";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
