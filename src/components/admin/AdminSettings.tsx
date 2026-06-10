@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Save, Info, CheckCircle, Eye, EyeOff, Lock, Zap, DollarSign, Settings, MessageSquare } from "@/components/icons/FontAwesomeIcons";
+import { Save, Info, CheckCircle, Eye, EyeOff, Lock, Clock, DollarSign, Users, MessageSquare } from "@/components/icons/FontAwesomeIcons";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -114,25 +114,25 @@ export const AdminSettings = ({ isAdmin }: { isAdmin: boolean }) => {
     {
       title: "Pricing & Commission",
       description: "Revenue and pricing configuration",
-      icon: AlertCircle,
+      icon: DollarSign,
       keys: ["commission_rate", "base_hourly_rate", "max_booking_distance_km"],
     },
     {
       title: "Professional Management",
       description: "Professional approval and verification settings",
-      icon: CheckCircle,
+      icon: Users,
       keys: ["auto_approve_professionals", "min_rating_to_show"],
     },
     {
       title: "Booking Configuration",
       description: "Booking timeout and expiration settings",
-      icon: AlertCircle,
+      icon: Clock,
       keys: ["booking_timeout_minutes", "require_email_verification"],
     },
     {
       title: "Communication",
       description: "Support and notification settings",
-      icon: Info,
+      icon: MessageSquare,
       keys: ["support_email", "support_phone", "enable_push_notifications"],
     },
   ];
