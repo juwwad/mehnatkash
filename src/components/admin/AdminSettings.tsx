@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Save, Info, CheckCircle, Eye, EyeOff, Lock, Clock, DollarSign, Users, MessageSquare } from "@/components/icons/FontAwesomeIcons";
+import { CheckCheck, Info, CheckCircle, Eye, EyeOff, Lock, Clock, DollarSign, Users, MessageSquare } from "@/components/icons/FontAwesomeIcons";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -322,7 +322,7 @@ export const AdminSettings = ({ isAdmin }: { isAdmin: boolean }) => {
               </>
             ) : (
               <>
-                <Save className="w-5 h-5" />
+                <CheckCheck className="w-5 h-5" />
                 {hasChanges ? "Save Changes" : "All Saved"}
               </>
             )}
