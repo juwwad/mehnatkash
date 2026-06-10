@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import {
   Check,
@@ -17,16 +17,72 @@ import { BottomNav } from "@/components/ui/BottomNav";
 import { NotificationBell } from "@/components/ui/NotificationBell";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { useRealtimeBookings } from "@/hooks/useRealtimeBookings";
+import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 const ProDashboard = () => {
   const { jobs, activeJobs, isLoading, acceptJob, rejectJob, markCompleted, markPaid } = useRealtimeBookings();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAvailable, setIsAvailable] = useState(true);
+  const [professionalId, setProfessionalId] = useState<string | null>(null);
+  const [isTogglingAvailability, setIsTogglingAvailability] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeTab, setActiveTab] = useState<"requests" | "active">("requests");
+
+  // Fetch professional profile and current availability on mount
+  useEffect(() => {
+    const fetchProfessionalStatus = async () => {
+      const authUserId = localStorage.getItem("auth_user_id");
+      if (!authUserId) return;
+
+      try {
+        const { data: professional, error } = await supabase
+          .from("professionals")
+          .select("id, is_available")
+          .eq("user_id", authUserId)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        if (professional) {
+          setProfessionalId(professional.id);
+          setIsAvailable(professional.is_available);
+        }
+      } catch (err) {
+        console.error("Error fetching professional status:", err);
+      }
+    };
+
+    fetchProfessionalStatus();
+  }, []);
+
+  // Handle availability toggle - updates both local state and database
+  const handleAvailabilityToggle = async () => {
+    if (!professionalId || isTogglingAvailability) return;
+
+    setIsTogglingAvailability(true);
+    const newStatus = !isAvailable;
+
+    try {
+      const { error } = await supabase
+        .from("professionals")
+        .update({ is_available: newStatus })
+        .eq("id", professionalId);
+
+      if (error) throw error;
+
+      setIsAvailable(newStatus);
+      toast.success(newStatus ? "✅ You're now online!" : "⏸️ You're now offline");
+    } catch (err) {
+      console.error("Error updating availability:", err);
+      toast.error("Failed to update status");
+    } finally {
+      setIsTogglingAvailability(false);
+    }
+  };
 
   const currentJob = jobs[currentIndex];
   const pendingCount = jobs.length - currentIndex;
@@ -83,18 +139,25 @@ const ProDashboard = () => {
 
             <div className="flex items-center gap-3">
               <NotificationBell count={pendingCount} />
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setIsAvailable(!isAvailable)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm haptic ${
-                  isAvailable
-                    ? "bg-success text-success-foreground"
-                    : "bg-muted text-muted-foreground"
-                }`}
-              >
-                {isAvailable ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
-                {isAvailable ? "Online" : "Offline"}
-              </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={handleAvailabilityToggle}
+              disabled={isTogglingAvailability}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm haptic transition-all ${
+                isAvailable
+                  ? "bg-success text-success-foreground"
+                  : "bg-muted text-muted-foreground"
+              } ${isTogglingAvailability ? "opacity-50 cursor-wait" : ""}`}
+            >
+              {isTogglingAvailability ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : isAvailable ? (
+                <ToggleRight className="w-5 h-5" />
+              ) : (
+                <ToggleLeft className="w-5 h-5" />
+              )}
+              {isTogglingAvailability ? "Updating..." : isAvailable ? "Online" : "Offline"}
+            </motion.button>
             </div>
           </div>
         </div>

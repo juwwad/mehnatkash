@@ -68,12 +68,16 @@ export const AdminProfessionals = ({ isAdmin }: { isAdmin: boolean }) => {
     try {
       const { error } = await supabase
         .from("professionals")
-        .update({ verification_status: "approved", is_verified: true })
+        .update({ 
+          verification_status: "approved", 
+          is_verified: true,
+          is_available: true  // Automatically make them visible/available when approved
+        })
         .eq("id", id);
 
       if (error) throw error;
 
-      toast.success("Professional approved!");
+      toast.success("Professional approved! They are now visible to customers.");
       fetchProfessionals();
     } catch (error) {
       console.error("Error approving:", error);

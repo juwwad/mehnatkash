@@ -11,6 +11,8 @@ import {
   MapPin,
 } from "@/components/icons/FontAwesomeIcons";
 import { RatingStars } from "@/components/ui/RatingStars";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 type OnboardingStep = "photo" | "profession" | "skills" | "rate" | "location" | "complete";
 
@@ -44,6 +46,104 @@ const ProOnboarding = () => {
   const [selectedProfession, setSelectedProfession] = useState<string | null>(null);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [hourlyRate, setHourlyRate] = useState(500);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleCompletionAndCreateProfile = async () => {
+    if (!selectedProfession) {
+      toast.error("Please select a profession");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const authUserId = localStorage.getItem("auth_user_id");
+      if (!authUserId) {
+        toast.error("User not found");
+        return;
+      }
+
+      // Get the service ID based on selected profession
+      const professionMap: Record<string, string> = {
+        electrician: "electrician",
+        plumber: "plumber",
+      };
+      const serviceType = professionMap[selectedProfession];
+
+      // Get service ID from services table
+      const { data: service, error: serviceError } = await supabase
+        .from("services")
+        .select("id")
+        .eq("type", serviceType)
+        .maybeSingle();
+
+      if (serviceError) throw serviceError;
+
+      // Get profile ID
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("user_id", authUserId)
+        .maybeSingle();
+
+      if (profileError) throw profileError;
+
+      if (!profile) {
+        toast.error("Profile not found. Please sign up again.");
+        return;
+      }
+
+      // Create professionals record
+      const { data: existingPro, error: checkError } = await supabase
+        .from("professionals")
+        .select("id")
+        .eq("user_id", authUserId)
+        .maybeSingle();
+
+      if (checkError) throw checkError;
+
+      if (existingPro) {
+        // Update existing record
+        const { error: updateError } = await supabase
+          .from("professionals")
+          .update({
+            profile_id: profile.id,
+            service_id: service?.id || null,
+            skills: selectedSkills,
+            hourly_rate: hourlyRate,
+            location_city: "Peshawar",
+            is_available: false, // They'll toggle online when ready
+          })
+          .eq("user_id", authUserId);
+
+        if (updateError) throw updateError;
+      } else {
+        // Create new record
+        const { error: createError } = await supabase
+          .from("professionals")
+          .insert({
+            user_id: authUserId,
+            profile_id: profile.id,
+            service_id: service?.id || null,
+            skills: selectedSkills,
+            hourly_rate: hourlyRate,
+            location_city: "Peshawar",
+            is_available: false, // They'll toggle online when ready
+            is_verified: false, // Pending admin approval
+            verification_status: "pending",
+          });
+
+        if (createError) throw createError;
+      }
+
+      toast.success("Profile setup complete! Waiting for admin approval.");
+      navigate("/pro/dashboard");
+    } catch (error) {
+      console.error("Error completing profile:", error);
+      toast.error("Failed to save profile. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const steps: OnboardingStep[] = ["photo", "profession", "skills", "rate", "location", "complete"];
   const currentIndex = steps.indexOf(step);
@@ -414,10 +514,18 @@ const ProOnboarding = () => {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => navigate("/pro/dashboard")}
-                className="px-8 py-4 gradient-primary text-primary-foreground rounded-2xl font-bold text-lg haptic shadow-glow"
+                onClick={handleCompletionAndCreateProfile}
+                disabled={isSubmitting}
+                className="px-8 py-4 gradient-primary text-primary-foreground rounded-2xl font-bold text-lg haptic shadow-glow disabled:opacity-50"
               >
-                Go to Dashboard
+                {isSubmitting ? (
+                  <>
+                    <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                    Setting up...
+                  </>
+                ) : (
+                  "Go to Dashboard"
+                )}
               </motion.button>
             </motion.div>
           )}
