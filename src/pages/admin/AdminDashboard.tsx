@@ -7,7 +7,8 @@ import {
   BarChart3, 
   Shield,
   ChevronRight,
-  LogOut
+  LogOut,
+  Cog
 } from "@/components/icons/FontAwesomeIcons";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,15 +16,17 @@ import { AdminProfessionals } from "@/components/admin/AdminProfessionals";
 import { AdminServices } from "@/components/admin/AdminServices";
 import { AdminBookings } from "@/components/admin/AdminBookings";
 import { AdminStats } from "@/components/admin/AdminStats";
+import { AdminSettings } from "@/components/admin/AdminSettings";
 import { useAdmin } from "@/hooks/useAdmin";
 
-type AdminTab = "stats" | "professionals" | "services" | "bookings";
+type AdminTab = "stats" | "professionals" | "services" | "bookings" | "settings";
 
 const tabs = [
   { id: "stats" as AdminTab, label: "Overview", icon: BarChart3 },
   { id: "professionals" as AdminTab, label: "Workers", icon: Users },
   { id: "services" as AdminTab, label: "Services", icon: Briefcase },
   { id: "bookings" as AdminTab, label: "Bookings", icon: Settings },
+  { id: "settings" as AdminTab, label: "Settings", icon: Cog },
 ];
 
 const AdminDashboard = () => {
@@ -105,6 +108,7 @@ const AdminDashboard = () => {
         {activeTab === "professionals" && <AdminProfessionals isAdmin={isAdmin} />}
         {activeTab === "services" && <AdminServices isAdmin={isAdmin} />}
         {activeTab === "bookings" && <AdminBookings isAdmin={isAdmin} />}
+        {activeTab === "settings" && <AdminSettings isAdmin={isAdmin} />}
       </main>
     </div>
   );
