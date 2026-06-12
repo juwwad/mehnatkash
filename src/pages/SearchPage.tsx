@@ -79,7 +79,10 @@ const SearchPage = () => {
             profiles!professionals_profile_id_fkey (full_name, avatar_url),
             services (name)
           `)
-          .eq("is_available", true)
+          // Include records that are either marked available or are verified.
+          // Some existing rows may have `is_available` null/false but are verified,
+          // so include those to ensure verified professionals appear in search.
+          .or('is_available.eq.true,is_verified.eq.true')
           .order("rating", { ascending: false });
 
         if (selectedService) {
