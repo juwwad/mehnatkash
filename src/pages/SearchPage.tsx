@@ -62,9 +62,30 @@ const SearchPage = () => {
 
         setServices(servicesData || []);
 
-        let query = supabase
-          .from("professionals")
-          .select(`
+        // Determine whether the user is authenticated; anonymous users should use
+        // the `professionals_public` view to respect RLS policies.
+        const { data: { user } } = await supabase.auth.getUser();
+        const tableName = user ? "professionals" : "professionals_public";
+
+        // Choose select shape depending on table/view schema (FK alias differs).
+        const selectString =
+          tableName === "professionals_public"
+            ? `
+            id,
+            user_id,
+            hourly_rate,
+            rating,
+            review_count,
+            is_available,
+            is_verified,
+            location_city,
+            location_lat,
+            location_lng,
+            service_id,
+            profiles:profile_id(full_name, avatar_url),
+            services:service_id(name)
+          `
+            : `
             id,
             user_id,
             hourly_rate,
@@ -78,12 +99,9 @@ const SearchPage = () => {
             service_id,
             profiles!professionals_profile_id_fkey (full_name, avatar_url),
             services (name)
-          `)
-          // Include records that are either marked available or are verified.
-          // Some existing rows may have `is_available` null/false but are verified,
-          // so include those to ensure verified professionals appear in search.
-          .or('is_available.eq.true,is_verified.eq.true')
-          .order("rating", { ascending: false });
+          `;
+
+        let query = supabase.from(tableName).select(selectString).or('is_available.eq.true,is_verified.eq.true').order("rating", { ascending: false });
 
         if (selectedService) {
           const serviceRecord = servicesData?.find((s) => s.type === selectedService);

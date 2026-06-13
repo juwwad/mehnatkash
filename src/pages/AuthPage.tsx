@@ -13,24 +13,24 @@ const AuthPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [step, setStep] = useState<AuthStep>("choice");
-  
+
   // Login/Signup form states
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
+
   // OTP states
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  
+
   // Profile states
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
   const [profilePicturePreview, setProfilePicturePreview] = useState<string | null>(null);
-  
+
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -138,10 +138,10 @@ const AuthPage = () => {
       localStorage.setItem("temp_auth_otp", otpCode);
 
       console.log("📧 OTP CODE:", otpCode);
-      toast({ 
-        title: "OTP Ready", 
+      toast({
+        title: "OTP Ready",
         description: `Your verification code is ${otpCode}`,
-        duration: 10000 
+        duration: 10000
       });
 
       setStep("verify-otp");
@@ -264,10 +264,10 @@ const AuthPage = () => {
       localStorage.setItem("temp_auth_otp", otpCode);
 
       console.log("📧 OTP CODE:", otpCode);
-      toast({ 
-        title: "OTP Resent!", 
+      toast({
+        title: "OTP Resent!",
         description: `Your new code is ${otpCode}`,
-        duration: 10000 
+        duration: 10000
       });
 
       setOtp(["", "", "", "", "", ""]);
@@ -318,7 +318,12 @@ const AuthPage = () => {
       }
 
       // Ensure the user is signed in before creating the profile
-      const { data: currentSession } = await supabase.auth.getSession();
+      let { data: currentSession } = await supabase.auth.getSession();
+      if (!currentSession?.session) {
+        // Retry once after a short delay — session may still be propagating
+        await new Promise((r) => setTimeout(r, 500));
+        ({ data: currentSession } = await supabase.auth.getSession());
+      }
       if (!currentSession?.session) {
         throw new Error("Session lost. Please sign in again.");
       }

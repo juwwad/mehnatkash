@@ -63,7 +63,8 @@ const Index = () => {
       const { data } = await supabase
         .from(table as any)
         .select("id, user_id, hourly_rate, is_available, is_verified, rating, review_count, profile_id, service_id, profiles:profile_id(full_name, avatar_url), services:service_id(name)")
-        .eq("is_available", true)
+        // Include either available professionals or those that are verified
+        .or('is_available.eq.true,is_verified.eq.true')
         .order("rating", { ascending: false })
         .limit(6);
 
