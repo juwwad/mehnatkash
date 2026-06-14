@@ -36,20 +36,32 @@ const AuthPage = () => {
 
   const generateOtp = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-  // Check if user already authenticated
+  // Check if user already authenticated via real Supabase session
   useEffect(() => {
     const checkSession = async () => {
-      const authUserId = localStorage.getItem("auth_user_id");
-      if (authUserId) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("user_type")
-          .eq("user_id", authUserId)
-          .maybeSingle();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
 
-        if (profile) {
-          navigate(profile.user_type === "professional" ? "/pro/dashboard" : "/");
-        }
+      const { data: adminRole } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (adminRole) {
+        navigate("/admin");
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("user_type")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+
+      if (profile) {
+        navigate(profile.user_type === "professional" ? "/pro/dashboard" : "/");
       }
     };
     checkSession();
