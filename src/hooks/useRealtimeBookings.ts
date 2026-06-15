@@ -193,7 +193,7 @@ export const useRealtimeBookings = () => {
       const job = jobs.find((j) => j.id === jobId);
       const { error } = await supabase
         .from("bookings")
-        .update({ status: "confirmed" })
+        .update({ status: "accepted" })
         .eq("id", jobId);
 
       if (error) throw error;

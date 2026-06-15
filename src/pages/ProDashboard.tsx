@@ -332,7 +332,7 @@ const ProDashboard = () => {
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-1">
-                        <StatusBadge status={job.status === "confirmed" ? "accepted" : job.status as any} size="sm" />
+                        <StatusBadge status={job.status as any} size="sm" />
                         <StatusBadge status={job.paymentStatus as any} size="sm" />
                       </div>
                     </div>
