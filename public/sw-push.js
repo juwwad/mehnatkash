@@ -21,7 +21,7 @@ self.addEventListener("push", (event) => {
     };
 
     event.waitUntil(
-      self.registration.showNotification(data.title || "TashkHaath Connect", options)
+      self.registration.showNotification(data.title || "MehnatKash", options)
     );
   } catch (e) {
     console.error("Push event error:", e);

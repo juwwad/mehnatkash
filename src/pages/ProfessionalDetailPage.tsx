@@ -423,7 +423,7 @@ const ProfessionalDetailPage = () => {
               </div>
             </a>
             <a
-              href={`https://wa.me/${professional.profiles?.phone?.replace(/^0/, '92').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi ${professional.profiles?.full_name || ''}, I found you on Tashk Haath and would like to discuss a ${professional.services?.name || 'service'} job.`)}`}
+              href={`https://wa.me/${professional.profiles?.phone?.replace(/^0/, '92').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi ${professional.profiles?.full_name || ''}, I found you on MehnatKash and would like to discuss a ${professional.services?.name || 'service'} job.`)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 p-3 bg-[hsl(142,70%,45%)]/10 rounded-xl hover:bg-[hsl(142,70%,45%)]/20 transition-colors"

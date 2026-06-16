@@ -95,7 +95,7 @@ export const InstallBanner = () => {
                   <Smartphone className="w-6 h-6 text-primary-foreground" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-foreground text-sm">Install TashkHaath</h3>
+                  <h3 className="font-bold text-foreground text-sm">Install MehnatKash</h3>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     Get instant notifications & quick access from your home screen
                   </p>
