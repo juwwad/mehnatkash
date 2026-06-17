@@ -66,7 +66,7 @@ const iconSizes = {
 };
 
 export const StatusBadge = ({ status, size = "md" }: StatusBadgeProps) => {
-  const config = statusConfig[status];
+  const config = statusConfig[status] || statusConfig.requested;
   const Icon = config.icon;
 
   return (

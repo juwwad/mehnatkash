@@ -185,6 +185,56 @@ export const useConversations = () => {
     [fetchConversations]
   );
 
+  // Get or create a conversation tied to a specific booking.
+  // Works for EITHER party — customer_id/professional_id are read from
+  // the booking row itself, not assumed from the caller's own auth.uid().
+  const getOrCreateConversationForBooking = useCallback(
+    async (bookingId: string): Promise<string | null> => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      // Already exists?
+      const { data: existing } = await supabase
+        .from("conversations")
+        .select("id")
+        .eq("booking_id", bookingId)
+        .maybeSingle();
+
+      if (existing) return existing.id;
+
+      // Look up the booking to get the correct customer/professional pair
+      const { data: booking, error: bookingError } = await supabase
+        .from("bookings")
+        .select("customer_id, professional_id")
+        .eq("id", bookingId)
+        .single();
+
+      if (bookingError || !booking) {
+        console.error("Error fetching booking for conversation:", bookingError);
+        return null;
+      }
+
+      const { data: created, error } = await supabase
+        .from("conversations")
+        .insert({
+          customer_id: booking.customer_id,
+          professional_id: booking.professional_id,
+          booking_id: bookingId,
+        })
+        .select("id")
+        .single();
+
+      if (error) {
+        console.error("Error creating conversation for booking:", error);
+        return null;
+      }
+
+      fetchConversations();
+      return created.id;
+    },
+    [fetchConversations]
+  );
+
   const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
 
   return {
@@ -194,6 +244,7 @@ export const useConversations = () => {
     currentUserId,
     totalUnread,
     getOrCreateConversation,
+    getOrCreateConversationForBooking,
     refetch: fetchConversations,
   };
 };

@@ -20,7 +20,6 @@ const customerNavItems: NavItem[] = [
 const professionalNavItems: NavItem[] = [
   { icon: Home, path: "/pro/dashboard", labelKey: "nav.jobs" },
   { icon: MessageCircle, path: "/chats", labelKey: "nav.chats" },
-  { icon: Briefcase, path: "/pro/bookings", labelKey: "nav.bookings" },
   { icon: Bell, path: "/pro/notifications", labelKey: "nav.alerts" },
   { icon: User, path: "/profile", labelKey: "nav.profile" },
 ];

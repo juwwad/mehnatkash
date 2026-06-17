@@ -381,7 +381,7 @@ Deno.serve(async (req) => {
 
     const privateKeyJwk = JSON.parse(vapidPrivateKeyJson);
     const payload = JSON.stringify({
-      title: safeTitle || "MehnatKash",
+      title: safeTitle || "TashkHaath Connect",
       body: safeBody || "You have a new notification",
       icon: "/app-icon.svg",
       badge: "/app-icon.svg",
@@ -399,7 +399,7 @@ Deno.serve(async (req) => {
         const jwt = await createJwt(
           privateKeyJwk,
           audience,
-          `mailto:juwwad@aup.edu.pk`
+          `mailto:noreply@tashkhaath.app`
         );
 
         const { ciphertext } = await encryptPayload(

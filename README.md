@@ -26,4 +26,4 @@ Ensure you have [Bun](https://bun.sh/) installed on your machine.
 ### Installation
 1. Clone the repository:
    ```bash
-   git clone [https://github.com/Masab-Umair/mehnat-kash.git](https://github.com/Masab-Umair/mehnat-kash.git)
+   git clone https://github.com/juwwad/mehnat-kash.git

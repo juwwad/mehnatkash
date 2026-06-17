@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import {
   Check,
@@ -12,18 +13,23 @@ import {
   Phone,
   CreditCard,
   CheckCircle2,
+  MessageCircle,
 } from "@/components/icons/FontAwesomeIcons";
 import { BottomNav } from "@/components/ui/BottomNav";
 import { NotificationBell } from "@/components/ui/NotificationBell";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { useRealtimeBookings } from "@/hooks/useRealtimeBookings";
+import { useConversations } from "@/hooks/useConversations";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 
 const ProDashboard = () => {
+  const navigate = useNavigate();
   const { jobs, activeJobs, isLoading, acceptJob, rejectJob, markCompleted, markPaid } = useRealtimeBookings();
+  const { getOrCreateConversationForBooking } = useConversations();
+  const [openingChatId, setOpeningChatId] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAvailable, setIsAvailable] = useState(true);
   const [professionalId, setProfessionalId] = useState<string | null>(null);
@@ -35,14 +41,14 @@ const ProDashboard = () => {
   // Fetch professional profile and current availability on mount
   useEffect(() => {
     const fetchProfessionalStatus = async () => {
-      const authUserId = localStorage.getItem("auth_user_id");
-      if (!authUserId) return;
-
       try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
         const { data: professional, error } = await supabase
           .from("professionals")
           .select("id, is_available")
-          .eq("user_id", authUserId)
+          .eq("user_id", user.id)
           .maybeSingle();
 
         if (error) throw error;
@@ -111,6 +117,21 @@ const ProDashboard = () => {
       handleSwipe("right");
     } else if (info.offset.x < -threshold) {
       handleSwipe("left");
+    }
+  };
+
+  const handleOpenChat = async (bookingId: string) => {
+    if (openingChatId) return;
+    setOpeningChatId(bookingId);
+    try {
+      const conversationId = await getOrCreateConversationForBooking(bookingId);
+      if (conversationId) {
+        navigate(`/chat/${conversationId}`);
+      } else {
+        toast.error("Couldn't open chat. Please try again.");
+      }
+    } finally {
+      setOpeningChatId(null);
     }
   };
 
@@ -332,7 +353,7 @@ const ProDashboard = () => {
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-1">
-                        <StatusBadge status={job.status as any} size="sm" />
+                        <StatusBadge status={job.status === "confirmed" ? "accepted" : job.status as any} size="sm" />
                         <StatusBadge status={job.paymentStatus as any} size="sm" />
                       </div>
                     </div>
@@ -343,6 +364,19 @@ const ProDashboard = () => {
                     </div>
 
                     <div className="flex gap-2">
+                      <motion.button
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => handleOpenChat(job.id)}
+                        disabled={openingChatId === job.id}
+                        className="flex-1 py-2.5 bg-muted text-foreground rounded-xl font-semibold text-sm flex items-center justify-center gap-2 haptic disabled:opacity-60"
+                      >
+                        {openingChatId === job.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <MessageCircle className="w-4 h-4" />
+                        )}
+                        Chat
+                      </motion.button>
                       {["confirmed", "in_progress"].includes(job.status) && (
                         <motion.button
                           whileTap={{ scale: 0.95 }}

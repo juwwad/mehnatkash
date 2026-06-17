@@ -70,7 +70,7 @@ const ProfessionalDetailPage = () => {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [bookingDescription, setBookingDescription] = useState("");
   const [bookingError, setBookingError] = useState("");
-  const { getOrCreateConversation } = useConversations();
+  const { getOrCreateConversation, getOrCreateConversationForBooking } = useConversations();
   const [submitting, setSubmitting] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
@@ -159,16 +159,26 @@ const ProfessionalDetailPage = () => {
     setBookingError("");
 
     try {
-      const { error } = await supabase.from("bookings").insert({
-        customer_id: currentUser.id,
-        professional_id: professional.id,
-        service_id: professional.services?.id,
-        description: result.data.description,
-        price: professional.hourly_rate,
-        status: "requested",
-      });
+      const { data: newBooking, error } = await supabase
+        .from("bookings")
+        .insert({
+          customer_id: currentUser.id,
+          professional_id: professional.id,
+          service_id: professional.services?.id,
+          description: result.data.description,
+          price: professional.hourly_rate,
+          status: "requested",
+        })
+        .select("id")
+        .single();
 
       if (error) throw error;
+
+      // Create the chat conversation for this booking right away so it's
+      // ready the moment the professional accepts.
+      if (newBooking) {
+        getOrCreateConversationForBooking(newBooking.id).catch(console.error);
+      }
 
       toast.success("Booking request sent!");
       setShowBookingModal(false);
@@ -423,7 +433,7 @@ const ProfessionalDetailPage = () => {
               </div>
             </a>
             <a
-              href={`https://wa.me/${professional.profiles?.phone?.replace(/^0/, '92').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi ${professional.profiles?.full_name || ''}, I found you on MehnatKash and would like to discuss a ${professional.services?.name || 'service'} job.`)}`}
+              href={`https://wa.me/${professional.profiles?.phone?.replace(/^0/, '92').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi ${professional.profiles?.full_name || ''}, I found you on Tashk Haath and would like to discuss a ${professional.services?.name || 'service'} job.`)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 p-3 bg-[hsl(142,70%,45%)]/10 rounded-xl hover:bg-[hsl(142,70%,45%)]/20 transition-colors"

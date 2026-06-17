@@ -30,6 +30,7 @@ export const useChat = (conversationId: string | null) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -142,7 +143,10 @@ export const useChat = (conversationId: string | null) => {
         }
       });
 
+    channelRef.current = channel;
+
     return () => {
+      channelRef.current = null;
       supabase.removeChannel(channel);
     };
   }, [conversationId, currentUserId, fetchMessages, markAsRead]);
@@ -196,9 +200,9 @@ export const useChat = (conversationId: string | null) => {
 
   // Send typing indicator
   const sendTypingIndicator = useCallback(async () => {
-    if (!conversationId) return;
+    const channel = channelRef.current;
+    if (!conversationId || !channel) return;
 
-    const channel = supabase.channel(`chat-${conversationId}`);
     await channel.track({ userId: currentUserId, typing: true, online: true });
 
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Briefcase, Clock, Star } from "@/components/icons/FontAwesomeIcons";
+import { Briefcase, Clock, Star, MessageCircle, Loader2 } from "@/components/icons/FontAwesomeIcons";
 import { BottomNav } from "@/components/ui/BottomNav";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { RatingModal } from "@/components/ui/RatingModal";
@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useCustomerNotifications } from "@/hooks/useCustomerNotifications";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useConversations } from "@/hooks/useConversations";
 import { format } from "date-fns";
 
 interface Booking {
@@ -35,7 +36,22 @@ const BookingsPage = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [ratingBooking, setRatingBooking] = useState<Booking | null>(null);
+  const { getOrCreateConversationForBooking } = useConversations();
+  const [openingChatId, setOpeningChatId] = useState<string | null>(null);
   useCustomerNotifications();
+
+  const handleOpenChat = async (bookingId: string) => {
+    if (openingChatId) return;
+    setOpeningChatId(bookingId);
+    try {
+      const conversationId = await getOrCreateConversationForBooking(bookingId);
+      if (conversationId) {
+        navigate(`/chat/${conversationId}`);
+      }
+    } finally {
+      setOpeningChatId(null);
+    }
+  };
 
   const fetchBookings = useCallback(async () => {
     try {
@@ -179,6 +195,22 @@ const BookingsPage = () => {
                     Rs {booking.price || booking.professionals?.hourly_rate || "TBD"}
                   </div>
                 </div>
+
+                {["confirmed", "in_progress", "completed", "rated"].includes(booking.status) && (
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleOpenChat(booking.id)}
+                    disabled={openingChatId === booking.id}
+                    className="w-full mt-4 flex items-center justify-center gap-2 py-3 bg-muted text-foreground rounded-xl font-semibold text-sm haptic disabled:opacity-60"
+                  >
+                    {openingChatId === booking.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <MessageCircle className="w-4 h-4" />
+                    )}
+                    Chat with {booking.professionals?.profiles?.full_name || "Worker"}
+                  </motion.button>
+                )}
 
                 {/* Rate button for completed bookings */}
                 {booking.status === "completed" && (
