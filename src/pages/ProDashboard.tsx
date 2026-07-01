@@ -37,6 +37,8 @@ const ProDashboard = () => {
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeTab, setActiveTab] = useState<"requests" | "active">("requests");
+  const [completingJobId, setCompletingJobId] = useState<string | null>(null);
+  const [paidJobId, setPaidJobId] = useState<string | null>(null);
 
   // Fetch professional profile and current availability on mount
   useEffect(() => {
@@ -128,8 +130,12 @@ const ProDashboard = () => {
       if (conversationId) {
         navigate(`/chat/${conversationId}`);
       } else {
+        console.error("getOrCreateConversationForBooking returned null for", bookingId);
         toast.error("Couldn't open chat. Please try again.");
       }
+    } catch (err: any) {
+      console.error("Error opening chat for booking", bookingId, err);
+      toast.error(err?.message || "Failed to open chat");
     } finally {
       setOpeningChatId(null);
     }
@@ -380,20 +386,58 @@ const ProDashboard = () => {
                       {["confirmed", "in_progress"].includes(job.status) && (
                         <motion.button
                           whileTap={{ scale: 0.95 }}
-                          onClick={() => markCompleted(job.id)}
-                          className="flex-1 py-2.5 bg-primary text-primary-foreground rounded-xl font-semibold text-sm flex items-center justify-center gap-2 haptic"
+                          onClick={async () => {
+                            setCompletingJobId(job.id);
+                            try {
+                              const ok = await markCompleted(job.id);
+                              if (!ok) {
+                                console.error("markCompleted returned false for", job.id);
+                                toast.error("Failed to mark complete. Please try again.");
+                              }
+                            } catch (error) {
+                              console.error("Error marking complete:", error);
+                              toast.error("Failed to mark complete. Please try again.");
+                            } finally {
+                              setCompletingJobId(null);
+                            }
+                          }}
+                          disabled={completingJobId === job.id}
+                          className="flex-1 py-2.5 bg-primary text-primary-foreground rounded-xl font-semibold text-sm flex items-center justify-center gap-2 haptic disabled:opacity-60"
                         >
-                          <CheckCircle2 className="w-4 h-4" />
+                          {completingJobId === job.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <CheckCircle2 className="w-4 h-4" />
+                          )}
                           Mark Complete
                         </motion.button>
                       )}
                       {job.paymentStatus === "unpaid" && (
                         <motion.button
                           whileTap={{ scale: 0.95 }}
-                          onClick={() => markPaid(job.id)}
-                          className="flex-1 py-2.5 bg-success text-success-foreground rounded-xl font-semibold text-sm flex items-center justify-center gap-2 haptic"
+                          onClick={async () => {
+                            setPaidJobId(job.id);
+                            try {
+                              const ok = await markPaid(job.id);
+                              if (!ok) {
+                                console.error("markPaid returned false for", job.id);
+                                toast.error("Failed to mark paid. Please try again.");
+                              }
+                            } catch (error) {
+                              console.error("Error marking paid:", error);
+                              toast.error("Failed to mark paid. Please try again.");
+                            } finally {
+                              setPaidJobId(null);
+                            }
+                          }}
+                          disabled={paidJobId === job.id}
+                          className="flex-1 py-2.5 bg-success text-success-foreground rounded-xl font-semibold text-sm flex items-center justify-center gap-2 haptic disabled:opacity-60"
                         >
-                          <DollarSign className="w-4 h-4" />
+                          {paidJobId === job.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <DollarSign className="w-4 h-4" />
+                          )}
                           Mark Paid
                         </motion.button>
                       )}

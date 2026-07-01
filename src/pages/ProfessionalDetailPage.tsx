@@ -16,6 +16,7 @@ import {
 } from "@/components/icons/FontAwesomeIcons";
 import { supabase } from "@/integrations/supabase/client";
 import { RatingStars } from "@/components/ui/RatingStars";
+import { RatingModal } from "@/components/ui/RatingModal";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useConversations } from "@/hooks/useConversations";
@@ -73,6 +74,8 @@ const ProfessionalDetailPage = () => {
   const { getOrCreateConversation, getOrCreateConversationForBooking } = useConversations();
   const [submitting, setSubmitting] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [ratingBooking, setRatingBooking] = useState<any>(null);
+  const [userBookings, setUserBookings] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -80,6 +83,15 @@ const ProfessionalDetailPage = () => {
         // Get current user
         const { data: { user } } = await supabase.auth.getUser();
         setCurrentUser(user);
+
+        // Fetch user bookings
+        if (user) {
+          const { data: bookings } = await supabase
+            .from("bookings")
+            .select("id, professional_id, status, services(name)")
+            .eq("customer_id", user.id);
+          setUserBookings(bookings || []);
+        }
 
         // Fetch professional details
         const { data: proData, error: proError } = await supabase
@@ -411,6 +423,28 @@ const ProfessionalDetailPage = () => {
           )}
         </motion.div>
 
+        {/* Leave a Review Button */}
+        {currentUser && currentUser.id !== professional.user_id && (
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => {
+              const completedBooking = userBookings?.find(
+                b => b.professional_id === professional.id && b.status === "completed"
+              );
+              if (completedBooking) {
+                setRatingBooking(completedBooking);
+              } else {
+                toast({ title: "Book this professional first", description: "You can leave a review after completing a booking", variant: "destructive" });
+              }
+            }}
+            className="w-full mt-6 px-6 py-3 gradient-primary text-primary-foreground rounded-xl font-bold flex items-center justify-center gap-2 haptic shadow-glow"
+          >
+            <Star className="w-5 h-5" />
+            Leave a Review
+          </motion.button>
+        )}
+
         {/* Contact */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -582,6 +616,22 @@ const ProfessionalDetailPage = () => {
           </motion.button>
         </div>
       </div>
+
+      {/* Rating Modal */}
+      {ratingBooking && (
+        <RatingModal
+          isOpen={!!ratingBooking}
+          onClose={() => setRatingBooking(null)}
+          onSubmit={() => {
+            setRatingBooking(null);
+            window.location.reload();
+          }}
+          bookingId={ratingBooking.id}
+          professionalId={professional.id}
+          professionalName={professional.profiles?.full_name || "Worker"}
+          serviceName={ratingBooking.services?.name || "Service"}
+        />
+      )}
     </div>
   );
 };

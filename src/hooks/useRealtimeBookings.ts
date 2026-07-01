@@ -255,6 +255,31 @@ export const useRealtimeBookings = () => {
 
   const markCompleted = async (jobId: string) => {
     try {
+      // Fetch current status to respect RLS/enforced transitions
+      const { data: current, error: fetchErr } = await supabase
+        .from("bookings")
+        .select("status")
+        .eq("id", jobId)
+        .single();
+
+      if (fetchErr || !current) {
+        console.error("Failed to fetch booking status:", fetchErr);
+        toast({ title: "Error", description: "Failed to fetch booking", variant: "destructive" });
+        return false;
+      }
+
+      const currStatus = current.status;
+
+      // If currently 'confirmed', first move to 'in_progress' then complete
+      if (currStatus === "confirmed") {
+        const { error: e1 } = await supabase
+          .from("bookings")
+          .update({ status: "in_progress" })
+          .eq("id", jobId);
+        if (e1) throw e1;
+      }
+
+      // Now set to completed
       const { error } = await supabase
         .from("bookings")
         .update({ status: "completed", completed_at: new Date().toISOString() })
@@ -279,7 +304,7 @@ export const useRealtimeBookings = () => {
       return true;
     } catch (error) {
       console.error("Error completing job:", error);
-      toast({ title: "Error", description: "Failed to mark complete", variant: "destructive" });
+      toast({ title: "Error", description: error?.message || "Failed to mark complete", variant: "destructive" });
       return false;
     }
   };

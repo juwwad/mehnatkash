@@ -210,10 +210,28 @@ export const useConversations = () => {
         .single();
 
       if (bookingError || !booking) {
-        console.error("Error fetching booking for conversation:", bookingError);
+        console.error("Error fetching booking for conversation:", bookingError, booking);
         return null;
       }
 
+      console.debug("Booking found for conversation:", bookingId, booking);
+
+      // Try to create conversation via Edge Function (service role) to avoid RLS insert issues
+      try {
+        const res = await supabase.functions.invoke("create-conversation", { body: { bookingId } });
+        if (res?.data && (res as any).status === 200) {
+          const id = (res as any).data.id || (res as any).data?.id;
+          console.debug("Conversation created via function:", id);
+          fetchConversations();
+          return id || null;
+        } else {
+          console.error("create-conversation function returned unexpected response:", res);
+        }
+      } catch (fnErr) {
+        console.error("create-conversation function failed:", fnErr);
+      }
+
+      // Fallback: attempt direct insert (may fail due to RLS)
       const { data: created, error } = await supabase
         .from("conversations")
         .insert({
@@ -225,10 +243,11 @@ export const useConversations = () => {
         .single();
 
       if (error) {
-        console.error("Error creating conversation for booking:", error);
+        console.error("Error creating conversation for booking (direct insert):", error, { booking });
         return null;
       }
 
+      console.debug("Conversation created for booking (direct):", created);
       fetchConversations();
       return created.id;
     },
